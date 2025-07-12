@@ -177,6 +177,11 @@
     <string name="accessibility_transaction_item">Transaction: %s</string>
     <string name="accessibility_chart">Spending chart</string>
     
+    <!-- Onboarding -->
+    <string name="next">Next</string>
+    <string name="skip">Skip</string>
+    <string name="get_started">Get Started</string>
+    
     <!-- AI Features -->
     <string name="ai_intelligence_settings">AI Intelligence Settings</string>
     <string name="ai_notifications">AI Notifications</string>

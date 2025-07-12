@@ -64,7 +64,6 @@ public class RecentTransactionAdapter extends ListAdapter<Transaction, RecentTra
             binding.textDescription.setText(transaction.getDescription());
             binding.textCategory.setText(transaction.getCategory());
             binding.textDate.setText(dateFormat.format(transaction.getDate()));
-            binding.textTime.setText(timeFormat.format(transaction.getDate()));
             
             // Format amount based on transaction type
             String amountText;
@@ -94,10 +93,10 @@ public class RecentTransactionAdapter extends ListAdapter<Transaction, RecentTra
             
             // Show recurring indicator with animation
             if (transaction.isRecurring()) {
-                binding.iconRecurring.setVisibility(android.view.View.VISIBLE);
-                AnimationUtils.pulse(binding.iconRecurring);
+                binding.textRecurring.setVisibility(android.view.View.VISIBLE);
+                AnimationUtils.pulse(binding.textRecurring);
             } else {
-                binding.iconRecurring.setVisibility(android.view.View.GONE);
+                binding.textRecurring.setVisibility(android.view.View.GONE);
             }
             
             // Add click animation

@@ -63,7 +63,7 @@
                 android:backgroundTint="?attr/colorPrimaryContainer"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
-                tools:text="Food & Dining" />
+                tools:text="Food &amp; Dining" />
 
             <TextView
                 android:id="@+id/text_date"
@@ -74,3 +74,40 @@
                 android:textColor="?attr/colorOnSurfaceVariant"
                 tools:text="Dec 15" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:id="@+id/text_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textStyle="bold"
+                android:textColor="?attr/colorError"
+                tools:text="-$24.99" />
+
+            <TextView
+                android:id="@+id/text_recurring"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="🔄 Recurring"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorPrimary"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,5 +1,6 @@
 package com.budgetwise.ui.settings;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,7 +86,7 @@ public class AISettingsFragment extends Fragment {
     }
 
     private void loadSettings() {
-        var prefs = getContext().getSharedPreferences("ai_settings", 0);
+        SharedPreferences prefs = getContext().getSharedPreferences("ai_settings", 0);
         
         binding.switchAiNotifications.setChecked(prefs.getBoolean("notifications_enabled", true));
         binding.switchBudgetAlerts.setChecked(prefs.getBoolean("budget_alerts_enabled", true));
