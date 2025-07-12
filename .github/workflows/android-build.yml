@@ -46,7 +46,12 @@ jobs:
           
     - name: Setup Gradle Wrapper
       run: |
-        gradle wrapper --gradle-version 8.2
+        # Create a new wrapper if needed
+        if [ ! -f ./gradlew ]; then
+          echo "Creating new Gradle wrapper"
+          gradle wrapper --gradle-version 8.2 || true
+        fi
+        # Make sure gradlew is executable
         chmod +x gradlew
       
     - name: Accept Android SDK licenses
@@ -62,8 +67,30 @@ jobs:
         
     - name: Build debug APK
       run: |
+        # Check if the wrapper is properly set up
+        echo "Checking Gradle wrapper files:"
         ls -la
         ls -la gradle/wrapper/
+        
+        # Verify the wrapper jar exists
+        if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+          echo "Gradle wrapper JAR missing, downloading it"
+          mkdir -p gradle/wrapper
+          curl -o gradle/wrapper/gradle-wrapper.jar https://repo.maven.apache.org/maven2/org/gradle/gradle-wrapper/8.2/gradle-wrapper-8.2.jar
+        fi
+        
+        # Verify the wrapper properties file
+        if [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
+          echo "Gradle wrapper properties missing, creating it"
+          mkdir -p gradle/wrapper
+          echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
+          echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
+          echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
+        fi
+        
+        # Try to build
         ./gradlew --version
         ./gradlew assembleDebug --stacktrace --info
       
