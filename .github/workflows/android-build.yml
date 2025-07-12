@@ -200,6 +200,8 @@ jobs:
           - Secure data encryption (AES-256)
           - Biometric authentication support
           - Material 3 design
+          - Fixed app crashes on Vivo V23 and similar devices
+          - Enhanced error handling and stability improvements
           
           ### Installation
           1. Download the APK file below
