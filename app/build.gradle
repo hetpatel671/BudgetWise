@@ -50,6 +50,10 @@ android {
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
             signingConfig signingConfigs.debug
+            
+            // Add crash reporting for debug builds
+            buildConfigField "boolean", "ENABLE_CRASH_REPORTING", "true"
+            buildConfigField "String", "BUILD_TYPE", '"debug"'
         }
         
         release {
@@ -63,6 +67,10 @@ android {
             
             // Signing config for release builds
             signingConfig signingConfigs.release
+            
+            // Add build config fields
+            buildConfigField "boolean", "ENABLE_CRASH_REPORTING", "true"
+            buildConfigField "String", "BUILD_TYPE", '"release"'
         }
     }
 

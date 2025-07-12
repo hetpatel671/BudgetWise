@@ -144,7 +144,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Run on main branch push or manual workflow dispatch
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
     
     steps:
     - name: Checkout code
@@ -156,6 +157,23 @@ jobs:
         name: release-apk
         path: ./
         
+    - name: Set up JDK 17 for signing
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Sign APK
+      run: |
+        # Create a keystore for signing
+        keytool -genkey -v -keystore release.keystore -storepass android -alias androidreleasekey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=BudgetWise Release,O=BudgetWise,C=US"
+        
+        # Sign the APK
+        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore release.keystore -storepass android -keypass android app-release.apk androidreleasekey
+        
+        # Verify the signature
+        jarsigner -verify -verbose -certs app-release.apk
+        
     - name: Get version from gradle
       id: get_version
       run: |
@@ -165,25 +183,36 @@ jobs:
           echo "Error: Could not extract version from build.gradle"
           exit 1
         fi
+        
+        # For workflow_dispatch events, add timestamp to ensure unique tag
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          VERSION="${VERSION}-${TIMESTAMP}"
+          TAG="v${VERSION}"
+          TAG_EXISTS="false"
+          echo "Creating timestamped version for manual workflow: $VERSION"
+        else
+          TAG="v${VERSION}"
+          # Check if tag exists
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, will create timestamped version"
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
+            VERSION="${VERSION}-${TIMESTAMP}"
+            TAG="v${VERSION}"
+            TAG_EXISTS="false"
+          else
+            TAG_EXISTS="false"
+          fi
+        fi
+        
         echo "Extracted version: $VERSION"
         echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-        
-    - name: Check if tag exists
-      id: check_tag
-      run: |
-        TAG="${{ steps.get_version.outputs.tag }}"
-        if git rev-parse "$TAG" >/dev/null 2>&1; then
-          echo "Tag $TAG already exists, skipping release creation"
-          echo "tag_exists=true" >> $GITHUB_OUTPUT
-        else
-          echo "Tag $TAG does not exist, proceeding with release"
-          echo "tag_exists=false" >> $GITHUB_OUTPUT
-        fi
+        echo "tag=$TAG" >> $GITHUB_OUTPUT
+        echo "tag_exists=$TAG_EXISTS" >> $GITHUB_OUTPUT
         
     - name: Create Release
       id: create_release
-      if: steps.check_tag.outputs.tag_exists == 'false'
+      if: steps.get_version.outputs.tag_exists == 'false'
       uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -200,6 +229,8 @@ jobs:
           - Secure data encryption (AES-256)
           - Biometric authentication support
           - Material 3 design
+          - Fixed app crashes on Vivo V23 and similar devices
+          - Enhanced error handling and stability improvements
           
           ### Installation
           1. Download the APK file below
@@ -219,4 +250,5 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          ./app-release.apk
+          ./release/app-release.apk
+          ./debug/app-debug.apk

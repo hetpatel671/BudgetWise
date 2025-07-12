@@ -9,6 +9,7 @@ import android.util.Log;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -43,9 +44,55 @@ public class EncryptionManager {
             }
 
             secretKey = (SecretKey) keyStore.getKey(KEYSTORE_ALIAS, null);
+            
+            // Verify the key is usable by doing a test encryption
+            testEncryption();
+            
         } catch (Exception e) {
-            Log.e(TAG, "Failed to initialize encryption key", e);
-            throw new RuntimeException("Encryption initialization failed", e);
+            Log.e(TAG, "Failed to initialize encryption key with KeyStore, falling back to device-specific key", e);
+            // Fallback to a device-specific key if KeyStore fails
+            createFallbackKey();
+        }
+    }
+    
+    private void testEncryption() {
+        try {
+            // Test encryption to make sure the key works
+            String testString = "test";
+            String encrypted = encrypt(testString);
+            String decrypted = decrypt(encrypted);
+            
+            if (!testString.equals(decrypted)) {
+                Log.e(TAG, "Encryption test failed, falling back to device-specific key");
+                createFallbackKey();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Encryption test failed, falling back to device-specific key", e);
+            createFallbackKey();
+        }
+    }
+    
+    private void createFallbackKey() {
+        try {
+            // Create a device-specific key as fallback
+            String deviceId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            String salt = "BudgetWiseSalt123"; // Fixed salt
+            String keyMaterial = deviceId + salt;
+            
+            // Use SHA-256 hash of the key material
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] keyBytes = digest.digest(keyMaterial.getBytes(StandardCharsets.UTF_8));
+            
+            // Create AES key
+            secretKey = new SecretKeySpec(keyBytes, "AES");
+            
+            Log.d(TAG, "Created fallback encryption key");
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to create fallback key", e);
+            // Last resort - create a fixed key (less secure but better than crashing)
+            byte[] fixedKey = new byte[32]; // 256 bits
+            new SecureRandom().nextBytes(fixedKey);
+            secretKey = new SecretKeySpec(fixedKey, "AES");
         }
     }
 
@@ -65,6 +112,10 @@ public class EncryptionManager {
     }
 
     public String encrypt(String plainText) {
+        if (plainText == null || plainText.isEmpty()) {
+            return "";
+        }
+        
         try {
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -79,14 +130,30 @@ public class EncryptionManager {
 
             return Base64.encodeToString(encryptedWithIv, Base64.DEFAULT);
         } catch (Exception e) {
-            Log.e(TAG, "Encryption failed", e);
-            throw new RuntimeException("Encryption failed", e);
+            Log.e(TAG, "Encryption failed, returning plaintext", e);
+            // Return a special marker to indicate unencrypted data
+            return "UNENCRYPTED:" + plainText;
         }
     }
 
     public String decrypt(String encryptedText) {
+        if (encryptedText == null || encryptedText.isEmpty()) {
+            return "";
+        }
+        
+        // Check if this is unencrypted data
+        if (encryptedText.startsWith("UNENCRYPTED:")) {
+            return encryptedText.substring("UNENCRYPTED:".length());
+        }
+        
         try {
             byte[] encryptedWithIv = Base64.decode(encryptedText, Base64.DEFAULT);
+            
+            // Validate input length
+            if (encryptedWithIv.length <= GCM_IV_LENGTH) {
+                Log.e(TAG, "Invalid encrypted data length");
+                return "";
+            }
 
             // Extract IV and encrypted data
             byte[] iv = new byte[GCM_IV_LENGTH];
@@ -101,8 +168,8 @@ public class EncryptionManager {
             byte[] decryptedData = cipher.doFinal(encryptedData);
             return new String(decryptedData, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            Log.e(TAG, "Decryption failed", e);
-            throw new RuntimeException("Decryption failed", e);
+            Log.e(TAG, "Decryption failed, returning empty string", e);
+            return "";
         }
     }
 

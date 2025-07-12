@@ -43,11 +43,18 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupViewModel() {
-        DashboardViewModelFactory factory = new DashboardViewModelFactory(
-            BudgetWiseApplication.getInstance().getBudgetRepository(),
-            BudgetWiseApplication.getInstance().getIntelligenceService()
-        );
-        viewModel = new ViewModelProvider(this, factory).get(DashboardViewModel.class);
+        try {
+            BudgetWiseApplication app = BudgetWiseApplication.getInstance();
+            if (app != null) {
+                DashboardViewModelFactory factory = new DashboardViewModelFactory(
+                    app.getBudgetRepository(),
+                    app.getIntelligenceService()
+                );
+                viewModel = new ViewModelProvider(this, factory).get(DashboardViewModel.class);
+            }
+        } catch (Exception e) {
+            android.util.Log.e("DashboardFragment", "Error setting up ViewModel", e);
+        }
     }
 
     private void setupRecyclerViews() {
