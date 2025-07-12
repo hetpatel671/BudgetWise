@@ -19,6 +19,7 @@ buildscript {
         recyclerViewVersion = "1.3.2"
         biometricVersion = "1.1.0"
         gsonVersion = "2.10.1"
+        splashScreenVersion = "1.0.1"
         
         // Test versions
         junitVersion = "4.13.2"

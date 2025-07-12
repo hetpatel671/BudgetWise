@@ -163,15 +163,18 @@ public class AddTransactionDialogFragment extends BottomSheetDialogFragment {
 
         String description = binding.editTextDescription.getText().toString().trim();
         double amount = Double.parseDouble(binding.editTextAmount.getText().toString().trim());
-        String category = binding.spinnerCategory.getSelectedItem().toString();
+        String category = binding.spinnerCategory.getText().toString();
         String notes = binding.editTextNotes.getText().toString().trim();
         boolean isRecurring = binding.switchRecurring.isChecked();
 
         Transaction.TransactionType type;
-        switch (binding.spinnerType.getSelectedItemPosition()) {
-            case 1: type = Transaction.TransactionType.INCOME; break;
-            case 2: type = Transaction.TransactionType.TRANSFER; break;
-            default: type = Transaction.TransactionType.EXPENSE; break;
+        String typeText = binding.spinnerType.getText().toString();
+        if ("Income".equals(typeText)) {
+            type = Transaction.TransactionType.INCOME;
+        } else if ("Transfer".equals(typeText)) {
+            type = Transaction.TransactionType.TRANSFER;
+        } else {
+            type = Transaction.TransactionType.EXPENSE;
         }
 
         // Create transaction object

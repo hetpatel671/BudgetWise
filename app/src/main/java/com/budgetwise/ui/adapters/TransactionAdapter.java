@@ -100,7 +100,7 @@ public class TransactionAdapter extends ListAdapter<Transaction, TransactionAdap
             binding.textAmount.setTextColor(amountColor);
             
             // Show recurring indicator
-            binding.iconRecurring.setVisibility(
+            binding.textRecurring.setVisibility(
                 transaction.isRecurring() ? android.view.View.VISIBLE : android.view.View.GONE);
         }
     }

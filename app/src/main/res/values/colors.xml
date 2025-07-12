@@ -93,6 +93,14 @@
     <color name="gradient_dark_start">#2c3e50</color>
     <color name="gradient_dark_end">#4a6741</color>
     
+    <!-- Gradient Aliases -->
+    <color name="gradient_start">@color/gradient_primary_start</color>
+    <color name="gradient_end">@color/gradient_primary_end</color>
+    <color name="income_gradient_start">#00b09b</color>
+    <color name="income_gradient_end">#96c93d</color>
+    <color name="expense_gradient_start">#ff416c</color>
+    <color name="expense_gradient_end">#ff4b2b</color>
+    
     <!-- Glass Morphism Colors -->
     <color name="glass_light">#80FFFFFF</color>
     <color name="glass_dark">#40000000</color>
