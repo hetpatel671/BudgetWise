@@ -112,22 +112,61 @@ public class BudgetWiseApplication extends Application {
     }
 
     public BudgetRepository getBudgetRepository() {
+        if (budgetRepository == null) {
+            android.util.Log.w("BudgetWiseApp", "BudgetRepository is null, creating fallback");
+            try {
+                if (encryptionManager == null) {
+                    encryptionManager = new EncryptionManager(this);
+                }
+                budgetRepository = new BudgetRepository(this, encryptionManager);
+            } catch (Exception e) {
+                android.util.Log.e("BudgetWiseApp", "Error creating fallback BudgetRepository", e);
+            }
+        }
         return budgetRepository;
     }
 
     public EncryptionManager getEncryptionManager() {
+        if (encryptionManager == null) {
+            android.util.Log.w("BudgetWiseApp", "EncryptionManager is null, creating fallback");
+            try {
+                encryptionManager = new EncryptionManager(this);
+            } catch (Exception e) {
+                android.util.Log.e("BudgetWiseApp", "Error creating fallback EncryptionManager", e);
+            }
+        }
         return encryptionManager;
     }
 
     public EnhancedIntelligenceService getIntelligenceService() {
+        if (intelligenceService == null) {
+            android.util.Log.w("BudgetWiseApp", "IntelligenceService is null");
+            // Don't create fallback for AI service as it's optional
+        }
         return intelligenceService;
     }
 
     public ThemeManager getThemeManager() {
+        if (themeManager == null) {
+            android.util.Log.w("BudgetWiseApp", "ThemeManager is null, creating fallback");
+            try {
+                themeManager = new ThemeManager(this);
+            } catch (Exception e) {
+                android.util.Log.e("BudgetWiseApp", "Error creating fallback ThemeManager", e);
+            }
+        }
         return themeManager;
     }
 
     public NotificationManager getNotificationManager() {
+        if (notificationManager == null) {
+            android.util.Log.w("BudgetWiseApp", "NotificationManager is null, creating fallback");
+            try {
+                notificationManager = new NotificationManager(this);
+            } catch (Exception e) {
+                android.util.Log.e("BudgetWiseApp", "Error creating fallback NotificationManager", e);
+            }
+        }
         return notificationManager;
     }
 }
